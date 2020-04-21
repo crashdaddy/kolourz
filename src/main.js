@@ -14,6 +14,10 @@
 // the user is swiping
 var last_position = {};
 
+let mouse_timer   = setInterval(function () {
+    mousemove_ok = true;
+}, 500);
+
 // this is the array for our colors
 const colorArray = ["red",
 "yellow",
@@ -137,13 +141,15 @@ const drawBoard = () => {
 
 drawBoard();
 
-$('.tile').mousedown(function(e1){
+$('.tile').mousedown($.throttle(350,true,function(e1){
    e1.preventDefault();
     
-    $('.tile').on('mousemove', function (event) {
+    $('.tile').on('mousemove', $.throttle(350,true,function (event) {
+        event.preventDefault();
+        if (mousemove_ok) {
+            mousemove_ok = false;
         if (event.buttons==1){
             let targetCell = event.target.id;
-            console.log(targetCell);
         if (typeof(last_position.x) != 'undefined') {
             var deltaX = last_position.x - event.offsetX,
                 deltaY = last_position.y - event.offsetY;
@@ -171,11 +177,12 @@ $('.tile').mousedown(function(e1){
             y : event.offsetY
         };
         }
-    });
+    }
+    }));
     
-});     
+}));     
 
-  $('.tile').mouseup(function(){
-    $(this).unbind("mousemove");
-    $(this).unbind("mousedown");
-});      
+//   $('.tile').mouseup(function(){
+//     $(this).unbind("mousemove");
+//     $(this).unbind("mousedown");
+// });      
