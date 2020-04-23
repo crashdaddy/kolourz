@@ -1,0 +1,69 @@
+body {
+    background-color: aliceblue;
+}
+#gameBoard {
+    width:656px;
+    height: 656px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tile {
+    border: 1px solid black;
+    float: left;
+    background: url("https://picsum.photos/640") no-repeat;
+}
+
+#output {
+    font-size: x-large;
+    margin-bottom: 10px;
+}
+#cheatPic {
+    float: left;
+    -webkit-box-shadow: 5px 5px 15px 5px #000000; 
+    box-shadow: 5px 5px 15px 5px #000000;
+    width: 228px;
+    padding: 20px;
+    margin-left: 30px;
+    text-align: center;
+}
+#referencePic {
+    width: 218px;
+    border:1px solid black;
+}
+
+#referencePic:hover {
+    transform: scale(3);
+    position: absolute;
+    transform-origin: top left;
+}
+
+#logoPic {
+    max-width: 90%;
+    border: 1px solid black; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media screen and (max-device-width: 767px){
+
+    #gameBoard {
+        margin-top: 50px;
+    }
+
+    #cheatPic {
+        width: 90%;
+        border: 1px solid black;
+        -webkit-box-shadow: 5px 5px 15px 5px #000000; 
+        box-shadow: 5px 5px 15px 5px #000000;
+        display: block;
+        padding: 20px;
+        margin-bottom: 50px;
+    }
+
+    #logoPic {
+        width:50%;
+        float: left;
+        margin-right:20px;
+    }
+}

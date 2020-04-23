@@ -1,26 +1,32 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            #gameBoard {
-                width:656px;
-                height: 656px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .tile {
-                width: 80px;
-                height: 80px;
-                border: 1px solid black;
-                float: left;
-            }
-        </style>
+    <head> 
+     <link href="includes/style.css" type="text/css" rel="stylesheet"/>
     </head>
     <body>
+        <div id = "cheatPic">
+        <img src="includes/Puzzles-logo.png" id="logoPic">
+        <img id="referencePic"><br/>
+        Moves: <div id="output">0</div>
+        <label for="boardSize">Change Board Size:</label>
 
+        <select id="boardSize" onchange="changeSize();">
+          <option value="2">2 x 2</option>
+          <option value="3">3 x 3</option>
+          <option value="4">4 x 4</option>
+          <option value="5">5 x 5</option>
+          <option value="6">6 x 6</option>
+          <option value="7">7 x 7</option>
+          <option value="8" selected="true">8 x 8</option>
+          <option value="9">9 x 9</option>
+        </select> 
+        <br/>
+        <p>
+        <div style="text-align: left;vertical-align: middle;"><span style="text-decoration: underline;">Images Courtesy of: <br/><p>
+        <a href="https://picsum.photos/" target="_blank"><img src="includes/picsumLogo.svg" style="float:left;width: 42px;">&nbsp;<span style="font-size: 24px;">Lorem Picsum</span></a></span>
+        </div></div>
         <div id="gameBoard"></div>
-        <div id="output"></div>
+        
         <script src="src/jquery-3.4.1.min.js"></script>
         <script src="src/throttle.js"></script>
         <script src="src/main.js"></script>
