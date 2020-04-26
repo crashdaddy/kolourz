@@ -24,6 +24,8 @@ Update: 4/25/20
 
   -- error trap when the picsum API provides a link to a missing image
 
+    DONE. Made imgError function that starts the game over if the image is missing
+
   -- save/load game state
 
   -- add timer

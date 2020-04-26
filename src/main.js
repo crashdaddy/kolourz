@@ -48,6 +48,12 @@ let shuffledArray = [];
 //   Helper Functions
 //
 
+// this function should detect when there's a missing
+// image from the API and just start over
+function imgError(image) {
+    console.log("missing pic");
+    gameStart();
+}
 // generate a random number in the required range (min-max)
 const getRandomInt = (min,max) => {
     min = Math.ceil(min);
@@ -366,7 +372,7 @@ const clicked = (elem) => {
             $("#winPanel").css('display','block');
             $("#winPanel").css('top','25%');
             $("#winPanel").css('left','50%');
-            $("#winPanel").html(`You Won in ${movesCount} moves!<br>
+            $("#winPanel").html(`You Won in ${movesCount} Moves!<br>
             <span style="font-size:10pt;">click to continue</span>`);
             gameOver = true;}
              
