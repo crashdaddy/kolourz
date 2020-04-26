@@ -248,6 +248,8 @@ const drawBoard = () => {
 
 
 const gameStart = () => {
+    movesCount=0;
+    $("#output").html(movesCount)
     backgroundPos=[];
     let randomNum = getRandomInt(0,999);
     let randomPic = "url('https://i.picsum.photos/id/"+randomNum+"/640/640.jpg') no-repeat";
@@ -351,7 +353,8 @@ const clicked = (elem) => {
             moveUp(elem.id);
             movesCount++;
         }
-        
+
+        $("#output").html(movesCount)
         // once we've done all that we can forget where we clicked
         secondClick.firstRow=null;
         secondClick.firstCol=null;
@@ -364,9 +367,8 @@ const clicked = (elem) => {
             $("#winPanel").css('top','50%');
             $("#winPanel").css('left','50%');
             $("#winPanel").html(`You Won in ${movesCount} moves!`);
-            gameOver = true;} else {$("#output").html(movesCount);}
-
- 
+            gameOver = true;}
+             
     }
     }
 }
