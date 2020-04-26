@@ -364,9 +364,10 @@ const clicked = (elem) => {
         // update the display showing how many moves
         if (gameWon()) {
             $("#winPanel").css('display','block');
-            $("#winPanel").css('top','50%');
+            $("#winPanel").css('top','25%');
             $("#winPanel").css('left','50%');
-            $("#winPanel").html(`You Won in ${movesCount} moves!`);
+            $("#winPanel").html(`You Won in ${movesCount} moves!<br>
+            <span style="font-size:10pt;">click to continue</span>`);
             gameOver = true;}
              
     }
