@@ -1,9 +1,15 @@
+@font-face {
+    font-family: "montserrat";
+    src: url('../includes/Montserrat-Regular.otf');
+}
+
 body {
     background-color: aliceblue;
+    font-family: montserrat;
 }
 #gameBoard {
-    width:656px;
-    height: 656px;
+    width:658px;
+    height: 658px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -11,7 +17,7 @@ body {
 .tile {
     border: 1px solid black;
     float: left;
-    background: url("https://picsum.photos/640") no-repeat;
+    /* background: url(https://i.picsum.photos/id/1/640/640.jpg) no-repeat; */
 }
 
 #output {
@@ -45,18 +51,40 @@ body {
     margin-right: auto;
 }
 
+#winPanel {
+    display:none;
+    width:300px;
+    height:200px;
+    position: absolute;
+    background-color: aliceblue;
+    border: 1px solid black;
+    z-index: 2;
+}
+
 @media screen and (max-device-width: 767px){
 
     #gameBoard {
+        width: 800px;
+        height: 800px;
         margin-top: 50px;
     }
 
+    .tile {
+        border: 1px solid black;
+        float: left;
+        background: url("https://picsum.photos/800") no-repeat;
+    }
+
     #cheatPic {
+        float: unset;
         width: 90%;
+        margin-left: 5%;
+        height: 150px;
+        margin-right: 5%;
         border: 1px solid black;
         -webkit-box-shadow: 5px 5px 15px 5px #000000; 
         box-shadow: 5px 5px 15px 5px #000000;
-        display: block;
+        display: inline-flex;
         padding: 20px;
         margin-bottom: 50px;
     }
@@ -65,5 +93,9 @@ body {
         width:50%;
         float: left;
         margin-right:20px;
+    }
+
+    #referencePic {
+        width: 50%;
     }
 }

@@ -10,6 +10,12 @@
 //
 //
 
+// keep track of the game's running state
+let gameOver = false;
+
+// track whether user is using 'cheat mode'
+let cheatMode = false;
+
 // keep track of if a div has been
 // clicked once or twice
 let secondClick = {};
@@ -34,6 +40,8 @@ const colorArray = ["red",
 // background coordinates for the tiles
 // will be an array of objects {tile: x: y:}
 let backgroundPos = [];
+// and the array for those same values all jumbled up
+let shuffledArray = [];
 
 ////////////////////////
 //
@@ -68,6 +76,19 @@ function shuffle(array) {
     return returnArray;
   }
 
+// toggle the 'cheat mode' on or off when user clicks the div
+const toggleCheat = () => {
+
+    if (!cheatMode) {
+        cheatMode=true;
+        $("#cheatMode").html('Cheat Mode: ON');
+    } else {
+        cheatMode = false;
+        $("#cheatMode").html('Cheat Mode: OFF');
+    }
+    gameWon()
+}
+
 // move the selected row to the right
 const moveRight = (rowCol) => {
     let tempId = rowCol.split("-");
@@ -86,6 +107,7 @@ const moveRight = (rowCol) => {
     // move the stored last div's values into the first div
     $(`#${row}-0`).css('background-color',tempColor);
     $(`#${row}-0`).css('background-position',tempPOS);
+
 }
 
 
@@ -151,69 +173,92 @@ let tempArray = [];
     }
 }
 
-// divide the selected image into sections and place them
-// randomly on the board
-const shuffleBoardPic = () => {
-    // the backgroundPos array holds the positions of the
-    // background sprite for each div
-    // we had to reassign it like this because if you
-    // just do tempArray = backgroundPos then the shuffle
-    // algorithm would still permute the backgroundPos
-    // array. We want it to stay in order for testing to see
-    // if all the pieces are in the right place when the user wins                
-    let tempArray = []
-    backgroundPos.forEach(arrayObj => {
-        tempArray.push(arrayObj);
-    });
+// this function performs a random set of permutations on the
+// gameboard to shuffle the picture around
 
-    // so we made a copy the hard way and we'll shuffle that
-    let shuffledArray = shuffle(tempArray);
+const shuffleBoard = () => {
 
-    // then cycle through it and assign the new shuffled values
-    // to each tile
-    let counter=0;
-        for (let i=0;i<boardHeight;i++){
-            for (let j=0;j<boardWidth;j++){
-                $(`#${i}-${j}`).css('background-position',shuffledArray[counter].pos);
-                counter++;
+    // we're going to perform 30 random moves
+    for (let i = 0;i<30;i++) {
+        // first pick a tile to start from
+        let randomX = getRandomInt(0,boardWidth-1);
+        let randomY = getRandomInt(0,boardHeight-1);
+        // construct its ID
+        let randomCell = `${randomX}-${randomY}`;
+        // pick a random direction
+        let randomDirection = getRandomInt(0,3);
+        // perform the move
+        switch (randomDirection) {
+            case 0: {
+                moveLeft(randomCell);
             }
+            break;
+            case 1: {
+                moveRight(randomCell);
+            }
+            break;
+            case 2: {
+                moveUp(randomCell);
+            }
+            break;
+            case 3: {
+                moveDown(randomCell);
+            }
+            break;
         }
+    }
 }
 
 const drawBoard = () => {
 
     let htmlStr = "";
-
     // figure up the tile width based on selected board size
-    let tileWidth = (Math.round($(`#gameBoard`).width()/boardWidth))-boardWidth;
-    let tileHeight= (Math.round($(`#gameBoard`).height()/boardHeight))-boardHeight;
-    
-    // this doesn't seem to work, that's why it's repeated as inline
-    // css in a couple of lines down
-    $(".tile").css({'width': `${tileWidth}px`,'height': `${tileHeight}px`});
+    let tileWidth = (Math.floor(($(`#gameBoard`).width()-2*boardWidth)/boardWidth));
+    let tileHeight= (Math.floor(($(`#gameBoard`).height()-2*boardHeight)/boardHeight));
+
+    let srcPic = $("#referencePic").attr('src');
+
+    // setup a counter to track the original starting position of each object
+    // in the array: div with id = "1-1" would be 1, "0-1" would be 0...all
+    // the way to div id "8-8" = 63;
+    let numberPosition = 0
     
     // cycle through the tiles
     for (let i=0;i<boardWidth;i++){
         for (j=0;j<boardHeight;j++) {
         // set each background and give it a click handler
         htmlStr += `<div id = "${i}-${j}" class="tile" onclick="clicked(this)"
-                style="background-position: -${j*tileWidth}px -${i*tileHeight}px;width:${tileWidth}px;height:${tileHeight}px;">&nbsp;</div>`;
+                style="background:url(${srcPic}) no-repeat;background-position: -${j*tileWidth}px -${i*tileHeight}px;width:${tileWidth}px;height:${tileHeight}px;">&nbsp;</div>`;
             // add it to the array so we know what sections of the image
             // are mapped to each tile when they're in the right order
-            backgroundPos.push({"tile":`${i}-${j}`,"pos": `-${j*tileWidth}px -${i*tileHeight}px`});
+            backgroundPos.push({"tile":`${i}-${j}`,"pos": `-${j*tileWidth}px -${i*tileHeight}px`, "numberPosition": numberPosition });
+            numberPosition++;
         }
     }   
-    
+
+    console.log(backgroundPos);
     // output the new tile layout to the screen
     $("#gameBoard").html(htmlStr);
     // put a big picture of the image up so the user can compare it
-    $("#referencePic").attr('src',($(".tile").css('background-image').replace(/^url\(['"](.+)['"]\)/, '$1')));
+    //$("#referencePic").attr('src',($(".tile").css('background-image').replace(/^url\(['"](.+)['"]\)/, '$1')));
 
     // now mess it all up!
-    shuffleBoardPic();
+    shuffleBoard();
 }
 
-drawBoard();
+
+const gameStart = () => {
+    backgroundPos=[];
+    let randomNum = getRandomInt(0,999);
+    let randomPic = "url('https://i.picsum.photos/id/"+randomNum+"/640/640.jpg') no-repeat";
+    $("#referencePic").attr('src','https://i.picsum.photos/id/'+randomNum+'/640/640.jpg');
+
+    $("#winPanel").css('display','none');
+    gameOver=false
+    drawBoard();
+}
+
+gameStart();
 
 // called when the user changes the "board size" pulldown
 // to a different setting
@@ -232,9 +277,41 @@ const changeSize = () => {
     drawBoard();
 }
 
+const gameWon = () => {
+    let won = true;
+    let counter= 0;
+
+       // unhighlight all the cells
+       $(".tile").css('border','1px solid black');
+
+    for (let i=0;i<boardWidth;i++) {
+        for (let j=0;j<boardHeight;j++) {
+            let boardPos = $(`#${i}-${j}`).css('background-position');
+            let strippedBoardPos = boardPos.replace(/-/g,'')
+
+            let strippedBGPos = backgroundPos[counter].pos.replace(/-/g,'');
+            if(strippedBGPos != strippedBoardPos) {
+                won = false;
+                
+                if (cheatMode) $(`#${i}-${j}`).css('border','1px solid red');
+                
+            }
+            counter++;
+        }
+    }
+
+    return won;
+}
+
+
 
 // this is the function that's called when the user clicks one of the tiles
 const clicked = (elem) => {
+    // unhighlight all the cells
+    $(".tile").css('border','1px solid black');
+
+
+    if (!gameOver) {
     // parse the tile ID for its coordinates on the board
     let tempId = elem.id.split("-");
     let clickedRow = tempId[1];
@@ -280,9 +357,16 @@ const clicked = (elem) => {
         secondClick.firstCol=null;
         secondClick.clicked=false;
 
+        // check for a win and
         // update the display showing how many moves
-        $("#output").html(movesCount);
-        // unhighlight all the cells
-        $(".tile").css('border','1px solid black');
+        if (gameWon()) {
+            $("#winPanel").css('display','block');
+            $("#winPanel").css('top','50%');
+            $("#winPanel").css('left','50%');
+            $("#winPanel").html(`You Won in ${movesCount} moves!`);
+            gameOver = true;} else {$("#output").html(movesCount);}
+
+ 
+    }
     }
 }
