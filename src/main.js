@@ -10,6 +10,13 @@
 //
 //
 
+// check the Local Storage for saved data
+let stats =  JSON.parse(localStorage.getItem("stats")) || [];
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
+// keep track of how many puzzles the player plays during this session
+let gamesPlayed = 0;
+
 // keep track of the game's running state
 let gameOver = false;
 
@@ -18,7 +25,7 @@ let cheatMode = false;
 
 // keep track of if a div has been
 // clicked once or twice
-let secondClick = {};
+let clickTracker = {};
 
 // count the moves
 let movesCount = 0;
@@ -242,7 +249,7 @@ const drawBoard = () => {
         }
     }   
 
-    console.log(backgroundPos);
+    //console.log(backgroundPos);
     // output the new tile layout to the screen
     $("#gameBoard").html(htmlStr);
     // put a big picture of the image up so the user can compare it
@@ -252,8 +259,39 @@ const drawBoard = () => {
     shuffleBoard();
 }
 
+// fills the stats board to the right of the gameboard
+const updateStats = () => {
+    // crate a string for the output
+    let htmlStr = "";
+
+    // if there are stats to print, print them,
+    // otherwise hide the panel completely
+    if (history.length>0) {
+        // show the panel
+        $("#statsBoard").css('display','inline-block');
+
+        for (let i = 0;i<history.length;i++) {
+            htmlStr+= `<div style="display:inline-block;width:100%;margin-bottom:10px;"><img src="${history[i].picture}" style="float:left;width:50px;">
+            board: ${history[i].board} Moves: ${history[i].moves} CheatMode: ${history[i].cheatMode}
+            
+            </div>`
+        }
+    } else {$("#statsBoard").css('display','none');}
+
+    $("#statsBoard").html(htmlStr);
+}
+
 
 const gameStart = () => {
+    updateStats();
+    gamesPlayed++;
+    if (stats.length>0) {
+        console.log("saving...");
+        stats[0].gamesPlayed=gamesPlayed;
+    } else {
+        stats.push({"gamesPlayed": gamesPlayed})
+    }
+    localStorage.setItem("stats",JSON.stringify(stats));
     movesCount=0;
     $("#output").html(movesCount)
     backgroundPos=[];
@@ -326,49 +364,52 @@ const clicked = (elem) => {
     let clickedCol = tempId[0];
 
     // the first time they click we're only going to highlight the selected tile
-    if (!secondClick.clicked) {
+    if (!clickTracker.clicked) {
         // we store the coordinates so when they click another tile afterward
         // we'll remember what they clicked the first time
-        secondClick.firstRow = clickedRow;
-        secondClick.firstCol = clickedCol;
+        clickTracker.firstRow = clickedRow;
+        clickTracker.firstCol = clickedCol;
         // this means we're waiting for the second click
-        secondClick.clicked = true;
+        clickTracker.clicked = true;
         // highlight the cell that's selected
         $(`#${elem.id}`).css('border','1px solid white');
         
     } else {
         // they clicked a second time which means the information has
-        // already been stored in the secondClick object for where
+        // already been stored in the clickTracker object for where
         // they clicked the first time
 
         // now we're comparing the second click to the first click
         // to see which direction they clicked in
-        if(clickedRow>secondClick.firstRow) {
+        if(clickedRow>clickTracker.firstRow) {
             // and then moving that row
             moveRight(elem.id);
             // add to the moves counter
             movesCount++;
-        } else if (clickedRow<secondClick.firstRow) {
+        } else if (clickedRow<clickTracker.firstRow) {
             moveLeft(elem.id);
             movesCount++;
-        } else if (clickedCol>secondClick.firstCol){
+        } else if (clickedCol>clickTracker.firstCol){
             // or column if they clicked a tile that was higher or lower
             moveDown(elem.id);
             movesCount++;
-        } else if (clickedCol<secondClick.firstCol) {
+        } else if (clickedCol<clickTracker.firstCol) {
             moveUp(elem.id);
             movesCount++;
         }
 
         $("#output").html(movesCount)
         // once we've done all that we can forget where we clicked
-        secondClick.firstRow=null;
-        secondClick.firstCol=null;
-        secondClick.clicked=false;
+        clickTracker.firstRow=null;
+        clickTracker.firstCol=null;
+        clickTracker.clicked=false;
 
         // check for a win and
         // update the display showing how many moves
         if (gameWon()) {
+            let boardDims = `${boardWidth}x${boardHeight}`;
+            history.push({"board": boardDims,"moves": movesCount, "picture": $("#referencePic").attr('src'),"cheatMode": cheatMode})
+            localStorage.setItem("history",JSON.stringify(history));
             $("#winPanel").css('display','block');
             $("#winPanel").css('top','25%');
             $("#winPanel").css('left','50%');

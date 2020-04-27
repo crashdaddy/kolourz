@@ -8,10 +8,11 @@ body {
     font-family: montserrat;
 }
 #gameBoard {
+    float: left;
     width:658px;
     height: 658px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 30px;
+    margin-right: 20px;
 }
 
 .tile {
@@ -30,9 +31,21 @@ body {
     box-shadow: 5px 5px 15px 5px #000000;
     width: 228px;
     padding: 20px;
-    margin-left: 30px;
+    margin-left: 20px;
     text-align: center;
+    border-radius: 5px;
 }
+
+#statsBoard {
+    float: left;
+    text-align: left;
+    padding: 20px;
+    width: 268px;
+    border-radius: 5px;
+    -webkit-box-shadow: 5px 5px 15px 5px #000000; 
+    box-shadow: 5px 5px 15px 5px #000000;
+}
+
 #referencePic {
     width: 218px;
     border:1px solid black;

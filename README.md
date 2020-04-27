@@ -31,3 +31,5 @@ Update: 4/25/20
   -- add timer
 
   -- save/load scores by boardSize
+
+    DONE -- added history to localStorage, displays on panel to the right of gameboard
