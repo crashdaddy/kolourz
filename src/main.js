@@ -20,8 +20,9 @@ let gamesPlayed = 0;
 // keep track of the game's running state
 let gameOver = false;
 
-// track whether user is using 'cheat mode'
+// track whether user is using 'cheat mode' or if it was used at all
 let cheatMode = false;
+let wasCheatModeUsed = false;
 
 // keep track of if a div has been
 // clicked once or twice
@@ -91,6 +92,8 @@ function shuffle(array) {
 
 // toggle the 'cheat mode' on or off when user clicks the div
 const toggleCheat = () => {
+    // whether they're turning it on or off they must have been using it
+    wasCheatModeUsed=true;
 
     if (!cheatMode) {
         cheatMode=true;
@@ -225,7 +228,7 @@ const shuffleBoard = () => {
 const drawBoard = () => {
 
     let htmlStr = "";
-    // figure up the tile width based on selected board size
+    // figure up the tile width based on picture size
     let tileWidth = Math.floor((640)/boardWidth);
     let tileHeight= Math.floor((640)/boardHeight);
 
@@ -408,7 +411,7 @@ const clicked = (elem) => {
         // update the display showing how many moves
         if (gameWon()) {
             let boardDims = `${boardWidth}x${boardHeight}`;
-            history.push({"board": boardDims,"moves": movesCount, "picture": $("#referencePic").attr('src'),"cheatMode": cheatMode})
+            history.push({"board": boardDims,"moves": movesCount, "picture": $("#referencePic").attr('src'),"cheatMode": wasCheatModeUsed})
             localStorage.setItem("history",JSON.stringify(history));
             $("#winPanel").css('display','block');
             $("#winPanel").css('top','25%');
