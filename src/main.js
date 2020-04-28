@@ -226,8 +226,8 @@ const drawBoard = () => {
 
     let htmlStr = "";
     // figure up the tile width based on selected board size
-    let tileWidth = (Math.floor(($(`#gameBoard`).width()-2*boardWidth)/boardWidth));
-    let tileHeight= (Math.floor(($(`#gameBoard`).height()-2*boardHeight)/boardHeight));
+    let tileWidth = Math.floor((640)/boardWidth);
+    let tileHeight= Math.floor((640)/boardHeight);
 
     let srcPic = $("#referencePic").attr('src');
 

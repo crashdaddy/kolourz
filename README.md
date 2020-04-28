@@ -2,6 +2,15 @@
 
 This is the rough-draft of a puzzle game I'm making. It was called Kolourz, because it was originally just a random pattern of colored tiles the user had to organize, but kind of evolved into a slidey puzzle game made out of pictures. Kind of like a 2-D Rubik's Cube Puzzle game. I'm thinking of calling it "Puzzly"
 
+Update: 4/27/20
+
+  Fixed that pesky problem where it was putting a white border around the bottom of the
+  tiles on the lower board sizes. 
+   
+    I was calculating the tile width based on the boardWidth (657) - 2*board size (to accommodate for
+    cell borders), but then I changed it to calculate tile size based on the image size (640) divided by the
+    board width (8, 2, 6, etc). That solved it!
+
 
 Update: 4/25/20
 
