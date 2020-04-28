@@ -286,6 +286,9 @@ const updateStats = () => {
 
 
 const gameStart = () => {
+    // clear out the cheatMode tracker
+    if(!cheatMode) wasCheatModeUsed=false;
+    
     updateStats();
     gamesPlayed++;
     if (stats.length>0) {

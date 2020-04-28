@@ -2,6 +2,12 @@
 
 This is the rough-draft of a puzzle game I'm making. It was called Kolourz, because it was originally just a random pattern of colored tiles the user had to organize, but kind of evolved into a slidey puzzle game made out of pictures. Kind of like a 2-D Rubik's Cube Puzzle game. I'm thinking of calling it "Puzzly"
 
+Update: 4/28/20
+
+  Added a tracker to follow whether cheat mode was used at all during the game. It was just tracking if it
+  was used during the last move, so they could use cheat mode the whole way through, then turn it off
+  for the last few moves. 
+
 Update: 4/27/20
 
   Fixed that pesky problem where it was putting a white border around the bottom of the
