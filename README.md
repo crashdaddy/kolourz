@@ -2,6 +2,33 @@
 
 This is the rough-draft of a puzzle game I'm making. It was called Kolourz, because it was originally just a random pattern of colored tiles the user had to organize, but kind of evolved into a slidey puzzle game made out of pictures. Kind of like a 2-D Rubik's Cube Puzzle game. I'm thinking of calling it "Puzzly"
 
+Update: 4/29/20
+
+  Added a scoring system. The score is calculated as:
+
+        score = board size * multiplier - moveCount
+
+  where the multiplier changes by the board size:
+
+  **Board**  **Multiplier**
+    2        10
+    3        25
+   4,5       100
+   6,7       200
+   8,9       300 
+
+   Added an achievement system. Achievements are stored in an array of objects:
+
+   {
+    "grid": 2,
+    "achievement" : "Baby Steps",
+    "announcement": "You gotta crawl before you can walk!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/bottle.png"
+   }
+
+   This one is for when you get your first win on board size 2x2. It's then added to "achievements" in localStorage and read each time the user plays.
+
 Update: 4/28/20
 
   Added a tracker to follow whether cheat mode was used at all during the game. It was just tracking if it

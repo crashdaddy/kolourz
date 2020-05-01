@@ -4,12 +4,13 @@
      <link href="includes/style.css" type="text/css" rel="stylesheet"/>
     </head>
     <body>
+        <div style="width: 100%;display: inline-block;">
         <div id = "cheatPic">
         <img src="includes/Puzzles-logo.png" id="logoPic">
         <img id="referencePic" onerror="imgError(this);"><br/>
         Moves: <div id="output">0</div>
         <div>
-        <label for="boardSize">Change Board Size:</label>
+        <label for="boardSize">Board Size:</label>
         
         <select id="boardSize" onchange="changeSize();">
           <option value="2">2 x 2</option>
@@ -27,13 +28,45 @@
           <div id="cheatMode" onclick="toggleCheat()">Cheat Mode: OFF</div>
         </p>  
         <p>
-        <div style="text-align: left;vertical-align: middle;"><span style="text-decoration: underline;">Images Courtesy of: <br/><p>
-        <a href="https://picsum.photos/" target="_blank"><img src="includes/picsumLogo.svg" style="float:left;width: 42px;">&nbsp;<span style="font-size: 24px;">Lorem Picsum</span></a></span>
-        </div>
+
         </div>
         <div id="gameBoard"></div>
-        <div id="statsBoard"></div>
+        <div id="trophyBoard"><img src="img/trophyCaseBanner.png">
+        <div id="scoreDiv"></div>
+        <div id="trophies"></div>
+        </div>
+        </div>  
+        <div id="statsBoard"><img src="img/statsBanner.png"><br/>
+        <span style="font-size: 10pt;">Top 5 solves for each grid size</span>
+          <table style="width:100%" id="statsTable">
+            <tr>
+              <th>2x2</th>
+              <th>3x3</th>
+              <th>4x4</th>
+              <th>5x5</th>
+              <th>6x6</th>
+              <th>7x7</th>
+              <th>8x8</th>
+              <th>9x9</th>
+            </tr>
+            <tr>
+              <td id="2x2"><div id="2x2"></div></td>
+              <td id="3x3"><div id="3x3"></div></td>
+              <td id="4x4"><div id="4x4"></div></td>
+              <td id="5x5"><div id="5x5"></div></td>
+              <td id="6x6"><div id="6x6"></div></td>
+              <td id="7x7"><div id="7x7"></div></td>
+              <td id="8x8"><div id="8x8"></div></td>
+              <td id="9x9"><div id="9x9"></div></td>
+            </tr>
+          </table> 
+        
+        </div>
+       
         <div id="winPanel" onclick="gameStart();"></div>
+        <div style="text-align: right;vertical-align: middle;padding:5px;"><span>Images Courtesy of: 
+          <a href="https://picsum.photos/" target="_blank"><img src="includes/picsumLogo.svg" style="float:right;width: 42px;padding-left:5px;"><span style="font-size: 24px;">Lorem Picsum</span></a></span>
+        </div>
         <script src="src/jquery-3.4.1.min.js"></script>
         <script src="src/throttle.js"></script>
         <script src="src/main.js"></script>

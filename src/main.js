@@ -10,46 +10,104 @@
 //
 //
 
+// the original scale of the images we use is 640x640
+const PICSIZE = 640;
+
+// set a collection of achievements for the player to unlock
+const achievements = [{
+    "grid": 2,
+    "achievement" : "Baby Steps",
+    "announcement": "You gotta crawl before you can walk!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/bottle.png"
+},
+{
+    "grid": 3,
+    "achievement" : "Bearly Tryin'",
+    "announcement": "Look who's puzzling!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/bear.png"
+},
+{
+    "grid": 4,
+    "achievement" : "Block Party",
+    "announcement": "You're building for success!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/blocks.png"
+},
+{
+    "grid": 5,
+    "achievement" : "Kicking It",
+    "announcement": "You're really on the ball!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/ball.png"
+},
+{
+    "grid": 6,
+    "achievement" : "Free-wheelin'",
+    "announcement": "The training wheels are off!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/bicycle.png"
+},
+{
+    "grid": 7,
+    "achievement" : "Freestyle",
+    "announcement": "I like your style!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/skateboard.png"
+},
+{
+    "grid": 8,
+    "achievement" : "Cruisin'",
+    "announcement": "You're really cruisin'!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/car.png"
+},
+{
+    "grid": 9,
+    "achievement" : "You've made it",
+    "announcement": "You're a real puzzle doctor!",
+    "achievementScore" : 1,
+    "trophyPic": "/img/trophies/diploma.png"
+}
+]
+
 // check the Local Storage for saved data
-let stats =  JSON.parse(localStorage.getItem("stats")) || [];
-let history = JSON.parse(localStorage.getItem("history")) || [];
+let stats              =  JSON.parse(localStorage.getItem("stats")) || [];
+let history            = JSON.parse(localStorage.getItem("history")) || [];
+let earnedAchievements = JSON.parse(localStorage.getItem("achievements")) || [];
 
 // keep track of how many puzzles the player plays during this session
-let gamesPlayed = 0;
+let gamesPlayed        = 0;
 
 // keep track of the game's running state
-let gameOver = false;
+let gameOver           = false;
+
+// we're gonna keep score now!
+let gameScore          = 0;
+let playerScore        = 0;
 
 // track whether user is using 'cheat mode' or if it was used at all
-let cheatMode = false;
-let wasCheatModeUsed = false;
+let cheatMode          = false;
+let wasCheatModeUsed   = false;
 
 // keep track of if a div has been
 // clicked once or twice
-let clickTracker = {};
+let clickTracker       = {};
 
 // count the moves
-let movesCount = 0;
+let movesCount         = 0;
 
-// set default board dimensions
-let boardWidth=$("#boardSize").val();
-let boardHeight=$("#boardSize").val();
-
-// this is the array for our colors
-const colorArray = ["red",
-"yellow",
-"blue",
-"green",
-"lavender",
-"lightgreen",
-"lightblue",
-"orange"]
+// set default board dimensions from the
+// pulldown's initial setting
+let boardWidth         =$("#boardSize").val();
+let boardHeight        =$("#boardSize").val();
 
 // background coordinates for the tiles
 // will be an array of objects {tile: x: y:}
-let backgroundPos = [];
+let backgroundPos      = [];
 // and the array for those same values all jumbled up
-let shuffledArray = [];
+let shuffledArray      = [];
 
 ////////////////////////
 //
@@ -69,26 +127,6 @@ const getRandomInt = (min,max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
-// This is known as the "Fischer-Yates Shuffle Algorithm"
-function shuffle(array) {
-    let returnArray = array;
-    var m = returnArray.length, t, i;
-  
-    // While there remain elements to shuffle…
-    while (m) {
-  
-      // Pick a remaining element…
-      i = Math.floor(Math.random() * m--);
-  
-      // And swap it with the current element.
-      t = returnArray[m];
-      returnArray[m] = returnArray[i];
-      returnArray[i] = t;
-    }
-    
-    return returnArray;
-  }
 
 // toggle the 'cheat mode' on or off when user clicks the div
 const toggleCheat = () => {
@@ -176,19 +214,6 @@ const moveDown = (rowCol) => {
 }
 
 
-// this function is only there from when it was just 
-// colored tiles, but I'm keeping it in case we 
-// want to make that a mode
-const colorBoard = () => {
-let tempArray = [];
-    for (let i=0;i<boardHeight;i++){
-        tempArray = shuffle(colorArray);
-        for (let j=0;j<boardWidth;j++){
-                       $(`#${i}-${j}`).css('background-color', colorArray[j]);
-        }
-    }
-}
-
 // this function performs a random set of permutations on the
 // gameboard to shuffle the picture around
 
@@ -229,8 +254,8 @@ const drawBoard = () => {
 
     let htmlStr = "";
     // figure up the tile width based on picture size
-    let tileWidth = Math.floor((640)/boardWidth);
-    let tileHeight= Math.floor((640)/boardHeight);
+    let tileWidth = Math.floor((PICSIZE)/boardWidth);
+    let tileHeight= Math.floor((PICSIZE)/boardHeight);
 
     let srcPic = $("#referencePic").attr('src');
 
@@ -262,55 +287,110 @@ const drawBoard = () => {
     shuffleBoard();
 }
 
+const updateAchievements = () => {
+        // set a string for the trophy case contents
+    let trophyStr = "";
+
+    // show the player's amazing score (total)
+    $("#scoreDiv").html("Score: "+ playerScore);
+
+    // if the player has some achievement trophies
+    // post them to the trophy case
+    for (let i=0;i<earnedAchievements.length;i++) {
+        trophyStr+= `<div style="width:100px;float:left;margin-left:5px;margin-top:5px;text-align:center;border:1px solid black;border-radius:5px;padding:5px;">
+        <img src="${earnedAchievements[i].trophyPic}" style="width:50px;" title="${earnedAchievements[i].announcement}">
+        <br/>
+        <span style="font-size:10pt;">${earnedAchievements[i].achievement}</span>
+        </div>`;
+    }
+
+    $("#trophies").html(trophyStr);
+}
+
 // fills the stats board to the right of the gameboard
 const updateStats = () => {
-    // crate a string for the output
-    let htmlStr = "";
-
-    // if there are stats to print, print them,
-    // otherwise hide the panel completely
+    // if there are stats to print, print them to a table where
+    // each column is a grid size and the first row will display
+    // all the scores for that grid size
     if (history.length>0) {
         // show the panel
-        $("#statsBoard").css('display','inline-block');
+        $("#statsBoard").css('display','block');
 
-        for (let i = 0;i<history.length;i++) {
-            htmlStr+= `<div style="display:inline-block;width:100%;margin-bottom:10px;"><img src="${history[i].picture}" style="float:left;width:50px;">
-            board: ${history[i].board} Moves: ${history[i].moves} CheatMode: ${history[i].cheatMode}
-            
-            </div>`
+        // first dig through the history and get all
+        // records for each board size starting with '2x2'
+        // going to '9x9'
+        for (let i=2;i<10;i++) {
+            // make an array to store those records in
+            let tempArray = [];
+            let statsStr = "";
+            // if the board size matches then store that record!
+            for (let j=0;j<history.length;j++) {
+                if (history[j].board === `${i}x${i}`) {
+                    tempArray.push(history[j]);
+                }
+            }
+        
+            // sort the array of records so the best ones will be first
+            tempArray.sort((a, b) => a.moves - b.moves); // For ascending sort
+            // we're only interested in the first five records
+            let topFive = 5;
+            // but the temp array might not be five elements long!
+            if (tempArray.length<topFive) topFive = tempArray.length;
+            // that's got it
+            for (let k = 0;k<topFive;k++) {
+                // add each record to the output
+                statsStr+= `<div style="display:inline-block;width:100%;margin-bottom:10px;">
+                <img src="${tempArray[k].picture}" style="max-width:90%;margin:5px 5px 2px 5px;border:1px solid black;">
+                <br/>Moves: ${tempArray[k].moves} 
+                <br/>Score: ${tempArray[k].score} 
+                <br/>CheatMode: ${tempArray[k].cheatMode}
+                </div>`;
         }
-    } else {$("#statsBoard").css('display','none');}
+        // display the top five!
+        $(`#${i}x${i}`).html(statsStr);
+        }
+    } else {$("#statsBoard").css('display','none');} // if there's no records, hid the panel
 
-    $("#statsBoard").html(htmlStr);
 }
 
 
 const gameStart = () => {
     // clear out the cheatMode tracker
     if(!cheatMode) wasCheatModeUsed=false;
-    
+
+    updateAchievements();
     updateStats();
     gamesPlayed++;
     if (stats.length>0) {
         console.log("saving...");
         stats[0].gamesPlayed=gamesPlayed;
+        stats[0].playerScore=playerScore;
     } else {
-        stats.push({"gamesPlayed": gamesPlayed})
+        stats.push({"gamesPlayed": gamesPlayed,"score":playerScore})
     }
     localStorage.setItem("stats",JSON.stringify(stats));
     movesCount=0;
     $("#output").html(movesCount)
     backgroundPos=[];
     let randomNum = getRandomInt(0,999);
-    let randomPic = "url('https://i.picsum.photos/id/"+randomNum+"/640/640.jpg') no-repeat";
-    $("#referencePic").attr('src','https://i.picsum.photos/id/'+randomNum+'/640/640.jpg');
+    let randomPic = `https://i.picsum.photos/id/${randomNum}/${PICSIZE}/640.jpg`;
+    $("#referencePic").attr('src',randomPic);
 
     $("#winPanel").css('display','none');
     gameOver=false
     drawBoard();
 }
 
-gameStart();
+const init = () => {
+
+    if (stats.length>0) {
+        playerScore = stats[0].playerScore;
+        gamesPlayed = stats[0].gamesPlayed;
+    } 
+    gameStart();
+}
+
+init();
 
 // called when the user changes the "board size" pulldown
 // to a different setting
@@ -413,16 +493,51 @@ const clicked = (elem) => {
         // check for a win and
         // update the display showing how many moves
         if (gameWon()) {
-            let boardDims = `${boardWidth}x${boardHeight}`;
-            history.push({"board": boardDims,"moves": movesCount, "picture": $("#referencePic").attr('src'),"cheatMode": wasCheatModeUsed})
-            localStorage.setItem("history",JSON.stringify(history));
+            let scoreMultiplier = 1;
+            if (boardWidth==2) scoreMultiplier=10;
+            if (boardWidth==3) scoreMultiplier=25;
+            if (boardWidth==4||boardWidth==5) scoreMultiplier=100;
+            if (boardWidth==6||boardWidth==7) scoreMultiplier=200;
+            if (boardWidth==8||boardWidth==9) scoreMultiplier=300;
+            gameScore= (boardWidth*scoreMultiplier)-movesCount;
+            playerScore+= gameScore;
+
             $("#winPanel").css('display','block');
             $("#winPanel").css('top','25%');
             $("#winPanel").css('left','50%');
-            $("#winPanel").html(`You Won in ${movesCount} Moves!<br>
-            <span style="font-size:10pt;">click to continue</span>`);
+            let htmlStr = `You Won in ${movesCount} Moves!<br>
+            <span style="font-size:15pt;">Game Score: ${gameScore}  Your Total: ${playerScore}</span><br/>
+            <span style="font-size:10pt;">click to continue</span>`;
+            let foundInHistory = false;
+            if (history.length>0) {
+                for (let i=0;i<history.length;i++) { 
+                    if (history[i].board===`${boardWidth}x${boardHeight}`)
+                    foundInHistory = true;
+                }
+            }
+           
+            if (!foundInHistory) {
+                for (let i= 0 ;i<achievements.length;i++){
+                    
+                if(achievements[i].grid==boardWidth) {
+                htmlStr += `
+                <br/><span style="font-size:24px;">You won an Achievement!</span>
+                <br/>${achievements[i].announcement}<br/>
+                <span style="font-size:24px;">${achievements[i].achievement}</span><br/>
+                <img src="${achievements[i].trophyPic}" style="width:50px;">`;
+               earnedAchievements.push(achievements[i]);
+            }
+            }
+            }
+            let boardDims = `${boardWidth}x${boardHeight}`;
+            history.push({"board": boardDims,"moves": movesCount, "score": gameScore, "picture": $("#referencePic").attr('src'),"cheatMode": wasCheatModeUsed})
+            localStorage.setItem("history",JSON.stringify(history));
+            localStorage.setItem("achievements",JSON.stringify(earnedAchievements));
+            $("#winPanel").html(htmlStr);
+          
             gameOver = true;}
              
     }
     }
 }
+
