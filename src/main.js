@@ -19,58 +19,72 @@ const achievements = [{
     "achievement" : "Baby Steps",
     "announcement": "You gotta crawl before you can walk!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/bottle.png"
+    "trophyPic": "img/trophies/bottle.png"
 },
 {
     "grid": 3,
     "achievement" : "Bearly Tryin'",
     "announcement": "Look who's puzzling!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/bear.png"
+    "trophyPic": "img/trophies/bear.png"
 },
 {
     "grid": 4,
     "achievement" : "Block Party",
     "announcement": "You're building for success!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/blocks.png"
+    "trophyPic": "img/trophies/blocks.png"
 },
 {
     "grid": 5,
     "achievement" : "Kicking It",
     "announcement": "You're really on the ball!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/ball.png"
+    "trophyPic": "img/trophies/ball.png"
 },
 {
     "grid": 6,
     "achievement" : "Free-wheelin'",
     "announcement": "The training wheels are off!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/bicycle.png"
+    "trophyPic": "img/trophies/bicycle.png"
 },
 {
     "grid": 7,
     "achievement" : "Freestyle",
     "announcement": "I like your style!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/skateboard.png"
+    "trophyPic": "img/trophies/skateboard.png"
 },
 {
     "grid": 8,
     "achievement" : "Cruisin'",
     "announcement": "You're really cruisin'!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/car.png"
+    "trophyPic": "img/trophies/car.png"
 },
 {
     "grid": 9,
     "achievement" : "You've made it",
     "announcement": "You're a real puzzle doctor!",
     "achievementScore" : 1,
-    "trophyPic": "/img/trophies/diploma.png"
+    "trophyPic": "img/trophies/diploma.png"
 }
 ]
+
+// make an object to hold the game variables
+class Game {
+    constructor(gameScore,wasCheatModeUsed,movesCount,gameTime,board,puzzleURL) {
+        this.gameScore          = gameScore;
+        this.wasCheatModeUsed   = wasCheatModeUsed;
+        this.movesCount         = movesCount;
+        this.gameTime           =gameTime;
+        this.board              =board;
+        this.puzzleURL          =puzzleURL;
+      }
+}
+
+let game;
 
 // check the Local Storage for saved data
 let stats              =  JSON.parse(localStorage.getItem("stats")) || [];
@@ -83,25 +97,20 @@ let gamesPlayed        = 0;
 // keep track of the game's running state
 let gameOver           = false;
 
-// we're gonna keep score now!
-let gameScore          = 0;
+// the player's total from all their games
 let playerScore        = 0;
 
 // track whether user is using 'cheat mode' or if it was used at all
 let cheatMode          = false;
-let wasCheatModeUsed   = false;
+
+    // set default board dimensions from the
+    // pulldown's initial setting
+let boardWidth         =$("#boardSize").val();
+let boardHeight        =$("#boardSize").val();
 
 // keep track of if a div has been
 // clicked once or twice
 let clickTracker       = {};
-
-// count the moves
-let movesCount         = 0;
-
-// set default board dimensions from the
-// pulldown's initial setting
-let boardWidth         =$("#boardSize").val();
-let boardHeight        =$("#boardSize").val();
 
 // background coordinates for the tiles
 // will be an array of objects {tile: x: y:}
@@ -114,11 +123,51 @@ let shuffledArray      = [];
 //   Helper Functions
 //
 
+// set variables for the timer
+let seconds = 0, minutes = 0, hours = 0,
+t; // the timer id for the clear function
+// boolean for on/off
+let clockRunning = false;
+
+
+const add = () => {
+seconds++;
+if (seconds >= 100) {
+    seconds = 0;
+    minutes++;
+    if (minutes >= 60) {
+        minutes = 0;
+        hours++;
+    }
+ }
+game.gameTime = (hours ? (hours > 9 ? hours : "0" + hours) : "00") + ":" + (minutes ? (minutes > 9 ? minutes : "0" + minutes) : "00") + ":" + (seconds > 9 ? seconds : "0" + seconds);
+$("#timer").html(game.gameTime);
+timer();
+}
+
+const stopTime = () => {
+    clockRunning=false;
+    clearTimeout(t);
+}
+
+const timer = () => {
+    clockRunning=true;
+    t = setTimeout(add, 10);
+}
+
+const clearTimer = () => {
+    seconds = 0;
+    minutes = 0;
+    hours   = 0;
+    game.gameTime="00:00:00";
+    $("#timer").html("00:00:00");
+}
+
 // this function should detect when there's a missing
 // image from the API and just start over
 function imgError(image) {
     console.log("missing pic");
-    gameStart();
+    gameStart("");
 }
 // generate a random number in the required range (min-max)
 const getRandomInt = (min,max) => {
@@ -127,21 +176,33 @@ const getRandomInt = (min,max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const openStats = () => {
+    if (history.length>0) {
+    $("#statsBoard").css('display','block');
+    }
+}
 
 // toggle the 'cheat mode' on or off when user clicks the div
 const toggleCheat = () => {
     // whether they're turning it on or off they must have been using it
-    wasCheatModeUsed=true;
+    game.wasCheatModeUsed=true;
 
     if (!cheatMode) {
         cheatMode=true;
-        $("#cheatMode").html('Cheat Mode: ON');
+        $("#cheatMode").html('ON');
     } else {
         cheatMode = false;
-        $("#cheatMode").html('Cheat Mode: OFF');
+        $("#cheatMode").html('OFF');
     }
-    gameWon()
+    checkWin();
 }
+
+
+////////////////////////////////
+//
+//  functions to move the rows
+//
+//
 
 // move the selected row to the right
 const moveRight = (rowCol) => {
@@ -213,6 +274,47 @@ const moveDown = (rowCol) => {
     $(`#0-${col}`).css('background-position',tempPOS);
 }
 
+// check to see if all the tiles are in their correct places
+// also highlights correct tiles if in "cheatMode"
+const checkWin = () => {
+    let won = true;
+    let counter= 0;
+    // unhighlight all the cells
+    $(".tile").css('border','1px solid black');
+    // setup a counter to see how many red tiles there are (out of place)
+    let redCounter=0;
+    for (let i=0;i<boardWidth;i++) {
+        for (let j=0;j<boardHeight;j++) {
+            let boardPos = $(`#${i}-${j}`).css('background-position');
+            // parse the coordinates of the tile's portion of the picture
+            let strippedBoardPos = boardPos.replace(/-/g,'')
+            // get the corresponding section of the correct image
+            let strippedBGPos = backgroundPos[counter].pos.replace(/-/g,'');
+            // compare the tile's background to what the correct background should be
+            if(strippedBGPos != strippedBoardPos) {
+                won = false;
+                redCounter++;
+                if (cheatMode) {
+                    $(`#${i}-${j}`).css('border','1px solid red');
+                }
+            }
+            counter++;
+        }
+    }
+
+    // calculate percentage solved (100% - redTiles%)
+    let boardTiles = boardWidth * boardHeight;
+    let redPercent = redCounter/boardTiles * 100;
+    let solvedPercent = 100-redPercent;
+    $("#percentComplete").html(solvedPercent.toFixed(2));
+    return won;
+}
+
+////////////////////////////////////
+//
+//  Board functions
+//
+//
 
 // this function performs a random set of permutations on the
 // gameboard to shuffle the picture around
@@ -248,6 +350,11 @@ const shuffleBoard = () => {
             break;
         }
     }
+
+    // now mess it all up!
+    if (checkWin()) {
+        shuffleBoard();
+    } 
 }
 
 const drawBoard = () => {
@@ -256,6 +363,11 @@ const drawBoard = () => {
     // figure up the tile width based on picture size
     let tileWidth = Math.floor((PICSIZE)/boardWidth);
     let tileHeight= Math.floor((PICSIZE)/boardHeight);
+
+    $("#gameBoard").css('width',tileWidth*boardWidth + (boardWidth)*2);
+    let sidePanelsHeight = $("#gameBoard").height()-20;
+    $("#cheatPic").css('height',sidePanelsHeight);
+    $("#trophyBoard").css('height',sidePanelsHeight);
 
     let srcPic = $("#referencePic").attr('src');
 
@@ -280,24 +392,21 @@ const drawBoard = () => {
     //console.log(backgroundPos);
     // output the new tile layout to the screen
     $("#gameBoard").html(htmlStr);
-    // put a big picture of the image up so the user can compare it
-    //$("#referencePic").attr('src',($(".tile").css('background-image').replace(/^url\(['"](.+)['"]\)/, '$1')));
-
-    // now mess it all up!
+    
     shuffleBoard();
 }
 
-const updateAchievements = () => {
+const outputAchievements = () => {
         // set a string for the trophy case contents
     let trophyStr = "";
 
     // show the player's amazing score (total)
-    $("#scoreDiv").html("Score: "+ playerScore);
+    $("#scoreDiv").html(playerScore.toLocaleString());
 
     // if the player has some achievement trophies
     // post them to the trophy case
     for (let i=0;i<earnedAchievements.length;i++) {
-        trophyStr+= `<div style="width:100px;float:left;margin-left:5px;margin-top:5px;text-align:center;border:1px solid black;border-radius:5px;padding:5px;">
+        trophyStr+= `<div class="trophy">
         <img src="${earnedAchievements[i].trophyPic}" style="width:50px;" title="${earnedAchievements[i].announcement}">
         <br/>
         <span style="font-size:10pt;">${earnedAchievements[i].achievement}</span>
@@ -307,14 +416,18 @@ const updateAchievements = () => {
     $("#trophies").html(trophyStr);
 }
 
+///////////////////////////////////////
+//
+//  pop-up window functions
+//
+//
+
 // fills the stats board to the right of the gameboard
-const updateStats = () => {
+const outputStats = () => {
     // if there are stats to print, print them to a table where
     // each column is a grid size and the first row will display
     // all the scores for that grid size
     if (history.length>0) {
-        // show the panel
-        $("#statsBoard").css('display','block');
 
         // first dig through the history and get all
         // records for each board size starting with '2x2'
@@ -331,7 +444,7 @@ const updateStats = () => {
             }
         
             // sort the array of records so the best ones will be first
-            tempArray.sort((a, b) => a.moves - b.moves); // For ascending sort
+            tempArray.sort((a, b) => a.movesCount - b.movesCount); // For ascending sort
             // we're only interested in the first five records
             let topFive = 5;
             // but the temp array might not be five elements long!
@@ -340,56 +453,142 @@ const updateStats = () => {
             for (let k = 0;k<topFive;k++) {
                 // add each record to the output
                 statsStr+= `<div style="display:inline-block;width:100%;margin-bottom:10px;">
-                <img src="${tempArray[k].picture}" style="max-width:90%;margin:5px 5px 2px 5px;border:1px solid black;">
-                <br/>Moves: ${tempArray[k].moves} 
-                <br/>Score: ${tempArray[k].score} 
-                <br/>CheatMode: ${tempArray[k].cheatMode}
+                <img src="${tempArray[k].puzzleURL}" onclick="gameStart(this.src);" style="max-width:50%;margin:5px 5px 2px 5px;border:1px solid black;">
+                <br/><span style="font-size:10pt;">Moves:</span> ${tempArray[k].movesCount} 
+                <br/><span style="font-size:10pt;">Score:</span> ${tempArray[k].gameScore} 
+                <br/><span style="font-size:10pt;">CheatMode:</span> ${tempArray[k].wasCheatModeUsed}
+                <br/><span style="font-size:10pt;">Time:</span> ${tempArray[k].gameTime}
                 </div>`;
         }
         // display the top five!
         $(`#${i}x${i}`).html(statsStr);
         }
-    } else {$("#statsBoard").css('display','none');} // if there's no records, hid the panel
+    } else {hidePanels();} // if there's no records, hide the panel
 
 }
 
-
-const gameStart = () => {
-    // clear out the cheatMode tracker
-    if(!cheatMode) wasCheatModeUsed=false;
-
-    updateAchievements();
-    updateStats();
-    gamesPlayed++;
+const updateStats = () => {
+        gamesPlayed++;
     if (stats.length>0) {
-        console.log("saving...");
         stats[0].gamesPlayed=gamesPlayed;
-        stats[0].playerScore=playerScore;
+        stats[0].score=playerScore;
     } else {
         stats.push({"gamesPlayed": gamesPlayed,"score":playerScore})
     }
     localStorage.setItem("stats",JSON.stringify(stats));
-    movesCount=0;
-    $("#output").html(movesCount)
-    backgroundPos=[];
-    let randomNum = getRandomInt(0,999);
-    let randomPic = `https://i.picsum.photos/id/${randomNum}/${PICSIZE}/640.jpg`;
-    $("#referencePic").attr('src',randomPic);
+}
 
-    $("#winPanel").css('display','none');
+const showSearch = () => {
+    let htmlStr = "";
+
+    $("#searchPanel").css('display','block');
+
+    for (let i=0;i<30;i++) {
+        let randomNum = getRandomInt(0,999);
+        randomPic = `https://i.picsum.photos/id/${randomNum}/${PICSIZE}/640.jpg`;
+        htmlStr += `<div style="float:left;margin:5px;">
+        <img src="${randomPic}" style="width:160px;" onclick="gameStart('${randomPic}')" onerror="this.src='https://picsum.photos/640/640'">
+        </div>`;
+    }
+
+    $("#searchPix").html(htmlStr);
+}
+
+const showWinPanel = () => {
+    $("#winPanel").css('display','block');
+    $("#winPanel").css('top','25%');
+    $("#winPanel").css('left','50%');
+    let htmlStr = `You Won in ${game.movesCount} Moves!<br>
+    <span style="font-size:15pt;">Game Score: ${game.gameScore}  Your Total: ${playerScore}</span><br/>
+    <span style="font-size:10pt;">click to continue</span>`;
+    let foundInHistory = false;
+    if (history.length>0) {
+        for (let i=0;i<history.length;i++) { 
+            if (history[i].board===`${boardWidth}x${boardHeight}`)
+            foundInHistory = true;
+        }
+    }
+   
+    if (!foundInHistory) {
+        for (let i= 0 ;i<achievements.length;i++){
+            
+        if(achievements[i].grid==boardWidth) {
+        htmlStr += `
+        <br/><span style="font-size:24px;">You won an Achievement!</span>
+        <br/>${achievements[i].announcement}<br/>
+        <span style="font-size:24px;">${achievements[i].achievement}</span><br/>
+        <img src="${achievements[i].trophyPic}" style="width:50px;">`;
+       earnedAchievements.push(achievements[i]);
+    }
+    }
+    }
+    let boardDims = `${boardWidth}x${boardHeight}`;
+    game.board=boardDims;
+    history.push(game);
+    localStorage.setItem("history",JSON.stringify(history));
+    localStorage.setItem("achievements",JSON.stringify(earnedAchievements));
+    $("#winPanel").html(htmlStr);
+}
+
+const hidePanels = () => {
+   // hide the "you won" panel
+   $("#winPanel").css('display','none');
+   $("#statsBoard").css('display','none');
+   $("#searchPanel").css('display','none');
+}
+
+
+const gameStart = (gamePic) => {
+
+    // initialize the game object
+    game = new Game(0,false,0,"00:00:00","","");
+
+    // set the timer to 00:00:00
+    clearTimer();
+    // turn off cheatMode
+    cheatMode = false;
+    $("#cheatMode").html('OFF');
+
+    // display current trophies
+    outputAchievements();
+    // stats will be invisible until user clicks
+    // the stats icon
+    outputStats();
+
+    // does this really need explaining?
+    game.movesCount=0;
+    $("#output").html(game.movesCount)
+
+    // clear out the array of image coodinates
+    backgroundPos=[];
+
+    if (gamePic==="") {
+    // start with a new picture
+    let randomNum = getRandomInt(0,999);
+    game.puzzleURL = `https://i.picsum.photos/id/${randomNum}/${PICSIZE}/640.jpg`;
+    } else game.puzzleURL = gamePic;
+
+    // show the picture solved
+    $("#referencePic").attr('src',game.puzzleURL);
+
+    // hide any panels that are open
+    hidePanels();
+
+    // start playin!
     gameOver=false
     drawBoard();
 }
 
 const init = () => {
-
+     // get the player's old stats if there's any to get
     if (stats.length>0) {
-        playerScore = stats[0].playerScore;
+        playerScore = stats[0].score;
         gamesPlayed = stats[0].gamesPlayed;
     } 
-    gameStart();
+    gameStart("");
 }
 
+// It all starts here!
 init();
 
 // called when the user changes the "board size" pulldown
@@ -402,39 +601,41 @@ const changeSize = () => {
     boardHeight= parseInt(newSize);
     boardWidth = parseInt(newSize);
     // reset the move counter
-    movesCount=0
-    $("#output").html(movesCount);
+    game.movesCount=0
+    $("#output").html(game.movesCount);
 
     // start over
     drawBoard();
 }
 
-const gameWon = () => {
-    let won = true;
-    let counter= 0;
+const playerWon = () => {
 
-       // unhighlight all the cells
-       $(".tile").css('border','1px solid black');
+    // turn off the timer
+    stopTime();
 
-    for (let i=0;i<boardWidth;i++) {
-        for (let j=0;j<boardHeight;j++) {
-            let boardPos = $(`#${i}-${j}`).css('background-position');
-            let strippedBoardPos = boardPos.replace(/-/g,'')
+    // get the scale for the scores
+    // it's dependent on board size
+    let scoreMultiplier = 1;
+    if (boardWidth==2) scoreMultiplier=10;
+    if (boardWidth==3) scoreMultiplier=25;
+    if (boardWidth==4||boardWidth==5) scoreMultiplier=100;
+    if (boardWidth==6||boardWidth==7) scoreMultiplier=200;
+    if (boardWidth==8||boardWidth==9) scoreMultiplier=300;
 
-            let strippedBGPos = backgroundPos[counter].pos.replace(/-/g,'');
-            if(strippedBGPos != strippedBoardPos) {
-                won = false;
-                
-                if (cheatMode) $(`#${i}-${j}`).css('border','1px solid red');
-                
-            }
-            counter++;
-        }
-    }
+    // calculate the score
+    game.gameScore= (boardWidth*scoreMultiplier)-game.movesCount;
+    if (game.gameScore<0) game.gameScore=0;
 
-    return won;
+    // this is the player's 'global' score for all games
+    playerScore+= game.gameScore;
+
+    // save player data
+    updateStats();
+
+    showWinPanel();
+
+    gameOver = true;
 }
-
 
 
 // this is the function that's called when the user clicks one of the tiles
@@ -444,6 +645,11 @@ const clicked = (elem) => {
 
 
     if (!gameOver) {
+    // if the clock's not running, start it up
+    if (!clockRunning) {
+        
+        timer();
+    }
     // parse the tile ID for its coordinates on the board
     let tempId = elem.id.split("-");
     let clickedRow = tempId[1];
@@ -471,71 +677,30 @@ const clicked = (elem) => {
             // and then moving that row
             moveRight(elem.id);
             // add to the moves counter
-            movesCount++;
+           game.movesCount++;
         } else if (clickedRow<clickTracker.firstRow) {
             moveLeft(elem.id);
-            movesCount++;
+            game.movesCount++;
         } else if (clickedCol>clickTracker.firstCol){
             // or column if they clicked a tile that was higher or lower
             moveDown(elem.id);
-            movesCount++;
+            game.movesCount++;
         } else if (clickedCol<clickTracker.firstCol) {
             moveUp(elem.id);
-            movesCount++;
+            game.movesCount++;
         }
-
-        $("#output").html(movesCount)
+        // update the display showing how many moves
+        $("#output").html(game.movesCount)
         // once we've done all that we can forget where we clicked
         clickTracker.firstRow=null;
         clickTracker.firstCol=null;
         clickTracker.clicked=false;
 
-        // check for a win and
-        // update the display showing how many moves
-        if (gameWon()) {
-            let scoreMultiplier = 1;
-            if (boardWidth==2) scoreMultiplier=10;
-            if (boardWidth==3) scoreMultiplier=25;
-            if (boardWidth==4||boardWidth==5) scoreMultiplier=100;
-            if (boardWidth==6||boardWidth==7) scoreMultiplier=200;
-            if (boardWidth==8||boardWidth==9) scoreMultiplier=300;
-            gameScore= (boardWidth*scoreMultiplier)-movesCount;
-            playerScore+= gameScore;
-
-            $("#winPanel").css('display','block');
-            $("#winPanel").css('top','25%');
-            $("#winPanel").css('left','50%');
-            let htmlStr = `You Won in ${movesCount} Moves!<br>
-            <span style="font-size:15pt;">Game Score: ${gameScore}  Your Total: ${playerScore}</span><br/>
-            <span style="font-size:10pt;">click to continue</span>`;
-            let foundInHistory = false;
-            if (history.length>0) {
-                for (let i=0;i<history.length;i++) { 
-                    if (history[i].board===`${boardWidth}x${boardHeight}`)
-                    foundInHistory = true;
-                }
-            }
-           
-            if (!foundInHistory) {
-                for (let i= 0 ;i<achievements.length;i++){
-                    
-                if(achievements[i].grid==boardWidth) {
-                htmlStr += `
-                <br/><span style="font-size:24px;">You won an Achievement!</span>
-                <br/>${achievements[i].announcement}<br/>
-                <span style="font-size:24px;">${achievements[i].achievement}</span><br/>
-                <img src="${achievements[i].trophyPic}" style="width:50px;">`;
-               earnedAchievements.push(achievements[i]);
-            }
-            }
-            }
-            let boardDims = `${boardWidth}x${boardHeight}`;
-            history.push({"board": boardDims,"moves": movesCount, "score": gameScore, "picture": $("#referencePic").attr('src'),"cheatMode": wasCheatModeUsed})
-            localStorage.setItem("history",JSON.stringify(history));
-            localStorage.setItem("achievements",JSON.stringify(earnedAchievements));
-            $("#winPanel").html(htmlStr);
-          
-            gameOver = true;}
+        // check for a win and if they won
+        // do the winning stuff        
+        if (checkWin()) {
+            playerWon();
+           }
              
     }
     }

@@ -8,11 +8,12 @@
         <div id = "cheatPic">
         <img src="includes/Puzzles-logo.png" id="logoPic">
         <img id="referencePic" onerror="imgError(this);"><br/>
-        Moves: <div id="output">0</div>
-        <div>
+        <div class="dashboard">Moves: <span id="output" class="stats">0</span></div>
+        
+        <div class="dashboard">
         <label for="boardSize">Board Size:</label>
         
-        <select id="boardSize" onchange="changeSize();">
+        <select id="boardSize" onchange="changeSize();" class="stats" style="margin-bottom:1px;background-color: #2b90df;border: none;">
           <option value="2">2 x 2</option>
           <option value="3">3 x 3</option>
           <option value="4">4 x 4</option>
@@ -22,21 +23,35 @@
           <option value="8" selected="true">8 x 8</option>
           <option value="9">9 x 9</option>
         </select> 
-        <br/>
         </div>
-        <p>
-          <div id="cheatMode" onclick="toggleCheat()">Cheat Mode: OFF</div>
-        </p>  
-        <p>
-
+        <div class="dashboard">
+          Cheat Mode: <span id="cheatMode" onclick="toggleCheat()" class="stats">OFF</span>
+        </div>  
+        <div class="dashboard">
+          Completion: <span id="percentComplete" class="stats"></span>%
+        </div>
+        <div class="dashboard">
+          Score: <span id="scoreDiv" class="stats"></span>
+        </div>
+        <div class="dashboard">
+          <span id="timer" onclick="stopTime();" class="stats"></span>
+        </div>
+        <div class="dashboard">
+          <img src="img/icons/search.png" style="width:30px;" onclick="showSearch();" title="Search for Pics">
+          <img src="img/icons/favoritesStarBlack.png" style="width:30px;" title="Add to My Favorites">
+          <img src="img/icons/favesList.png" style="width:30px;margin-left: 10px;" title="Show My Favorites">
+          <img src="img/icons/stats.png" style="width:30px;margin-left: 10px;" title="View My Stats" onclick="openStats();">
+        </div>
         </div>
         <div id="gameBoard"></div>
         <div id="trophyBoard"><img src="img/trophyCaseBanner.png">
-        <div id="scoreDiv"></div>
         <div id="trophies"></div>
         </div>
         </div>  
-        <div id="statsBoard"><img src="img/statsBanner.png"><br/>
+        <div id="statsBoard" class="windowPane"><img src="img/statsBanner.png"><br/>
+        <div id="closeButton" style="position: absolute;top:5px;right:5px;">
+          <img src="img/icons/redX.png" style="width:30px;" onclick="hidePanels();">
+        </div>
         <span style="font-size: 10pt;">Top 5 solves for each grid size</span>
           <table style="width:100%" id="statsTable">
             <tr>
@@ -63,7 +78,12 @@
         
         </div>
        
-        <div id="winPanel" onclick="gameStart();"></div>
+        <div id="winPanel" class="winnerPanel" onclick="gameStart('');"></div>
+        <div id="searchPanel" class="windowPane"><div id="closeButton" style="position: absolute;top:5px;right:5px;">
+          <img src="img/icons/redX.png" style="width:30px;" onclick="hidePanels();">
+        </div>
+        <div id="searchPix"></div>
+        </div>
         <div style="text-align: right;vertical-align: middle;padding:5px;"><span>Images Courtesy of: 
           <a href="https://picsum.photos/" target="_blank"><img src="includes/picsumLogo.svg" style="float:right;width: 42px;padding-left:5px;"><span style="font-size: 24px;">Lorem Picsum</span></a></span>
         </div>
